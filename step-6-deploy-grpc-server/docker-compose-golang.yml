@@ -1,0 +1,11 @@
+version: '3'
+services:
+  server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-golang
+    logging:
+      driver: json-file
+    command: go run server.go
+    ports:
+      - "50051:50051"

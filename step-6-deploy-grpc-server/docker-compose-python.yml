@@ -1,0 +1,10 @@
+version: '3'
+services:
+  server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile-python
+    logging:
+      driver: json-file
+    ports:
+      - "50051:50051"
