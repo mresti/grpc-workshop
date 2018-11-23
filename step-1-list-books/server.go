@@ -3,18 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"net"
-
 	pbBooks "github.com/mresti/grpc-workshop/step-1-list-books/books"
-
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"log"
+	"net"
 )
 
 var (
-	port      = flag.Int("port", 50051, "The server port")
-	booksList = []*pbBooks.Book{
+	port     = flag.Int("port", 50051, "The server port")
+	bookList = []*pbBooks.Book{
 		{
 			Id:     123,
 			Title:  "A Tale of Two Cities",
@@ -41,5 +39,5 @@ type service struct {
 }
 
 func (s *service) List(context.Context, *pbBooks.Empty) (*pbBooks.BookList, error) {
-	return &pbBooks.BookList{Books: booksList}, nil
+	return &pbBooks.BookList{Books: bookList}, nil
 }

@@ -1,4 +1,4 @@
-FROM golang:1.10.5-alpine
+FROM golang:1.11.2-alpine
 
 ENV SRV_NAME step-6-deploy-grpc-server
 

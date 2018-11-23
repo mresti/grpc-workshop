@@ -6,12 +6,12 @@ In this workshop, you will learn using Python how to build a gRPC server, a gRPC
 
 ### Get the initial files 
 
-The source for this codelab is in `grpc-workshop/start`.
+The source for this codelab is in `grpc-workshop/init`.
 
-Sample project layout:
-| Name              | Description                            |
-| client.go         | Command-line client for the server API.|
-| books/books.pb.go | go library for the books gRPC service. |
+Sample project layout:  
+| Name              | Description                            |  
+| client.go         | Command-line client for the server API.|  
+| books/books.pb.go | go library for the books gRPC service. |  
 
 #### Step 0: Run the client application
 
@@ -828,19 +828,58 @@ services:
       - "50051:50051"
 ```
 
+Now, we build the images using below command:
+
+```commandline
+docker-compose build
+```
+
+Let's go to up the infrastructure using command:
+
+```commandline
+docker-compose up
+```
+
 At the end, we test using our infrastructure using our clients.
 
+Test using golang client:
+
+```commandline
+go run client.go list
+```
 ```commandline
 go run client.go get 123
 ```
 ```commandline
 go run client.go list
 ```
+```commandline
+go run client.go insert 1234 "Commit Conf" "2018"
+```
+```commandline
+go run client.go list
+```
+
+Test using python client:
 
 ```commandline
-python client.py get 123
+go run client.go list
+```
+```commandline
+go run client.go get 123
+```
+```commandline
+go run client.go list
+```
+```commandline
+python client.py insert 1234 "Commit Conf" "2018"
 ```
 ```commandline
 python client.py list
+```
+
+*Remember:* To shutdown the infrastructure using command:
+```commandline
+docker-compose down
 ```
 

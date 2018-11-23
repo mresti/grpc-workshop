@@ -122,7 +122,7 @@ func doGet(ctx context.Context, args ...string) {
 	}
 	conn, client := GetClient()
 	defer conn.Close()
-	r, err := client.Get(ctx, &pb.BookIdRequest{int32(id)})
+	r, err := client.Get(ctx, &pb.BookIdRequest{Id: int32(id)})
 	if err != nil {
 		log.Fatalf("Get book (%v): %v", id, err)
 	}
@@ -143,7 +143,7 @@ func doDelete(ctx context.Context, args ...string) {
 	}
 	conn, client := GetClient()
 	defer conn.Close()
-	r, err := client.Delete(ctx, &pb.BookIdRequest{int32(id)})
+	r, err := client.Delete(ctx, &pb.BookIdRequest{Id: int32(id)})
 	if err != nil {
 		log.Fatalf("Delete book (%v): %v", id, err)
 	}

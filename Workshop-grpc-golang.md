@@ -6,12 +6,12 @@ In this workshop, you will learn using Golang how to build a gRPC server, a gRPC
 
 ### Get the initial files 
 
-The source for this codelab is in `grpc-workshop/start`.
+The source for this codelab is in `grpc-workshop/init`.
 
-Sample project layout:
-| Name              | Description                            |
-| client.go         | Command-line client for the server API.|
-| books/books.pb.go | go library for the books gRPC service. |
+Sample project layout:  
+| Name              | Description                            |  
+| client.go         | Command-line client for the server API.|  
+| books/books.pb.go | go library for the books gRPC service. |  
 
 #### Step 0: Run the client application
 
@@ -46,7 +46,7 @@ Let's fix this!
 
 ### Step 1: List all books
 
-In this step you will write the code to implement a Golang gRPC service that lists books.
+In this step you will write the code to implement a Golang gRPC service that lists books in source  `grpc-workshop/start`.
 
 gRPC services are defined in `.proto` files using the protocol buffer language.
 
@@ -56,7 +56,7 @@ The protocol buffer language is used to define services and message types.
 
 Let's start by defining a service for books!
 
-In the project directory `start`, create a new file called `books.proto` and add the following:
+In the project directory `start/books`, create a new file called `books.proto` and add the following:
 
 `books.proto`
 ```proto
@@ -516,9 +516,9 @@ Next step, is create a dockerfile with docker, we use docker image for golang ve
 So that we create a file `Dockerfile`
 
 ```dockerfile
-FROM golang:1.10.5-alpine
+FROM golang:1.11.2-alpine
 
-ENV SRV_NAME step-6-deploy-grpc-server
+ENV SRV_NAME start
 
 ENV PKG_PATH /go/src/github.com/mresti/grpc-workshop
 
@@ -554,11 +554,37 @@ services:
       - "50051:50051"
 ```
 
+Now, we build the images using below command:
+
+```commandline
+docker-compose build
+```
+
+Let's go to up the infrastructure using command:
+
+```commandline
+docker-compose up
+```
+
 At the end, we test using our infrastructure using our clients.
 
+```commandline
+go run client.go list
+```
 ```commandline
 go run client.go get 123
 ```
 ```commandline
 go run client.go list
+```
+```commandline
+go run client.go insert 1234 "Commit Conf" "2018"
+```
+```commandline
+go run client.go list
+```
+
+*Remember:* To shutdown the infrastructure using command:
+```commandline
+docker-compose down
 ```
