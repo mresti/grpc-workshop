@@ -243,9 +243,9 @@ Now add the function to `server.go` as well:
 
  `server.go`
 ```go
-func (s *service) Insert(ctx context.Context, book *books.Book) (*books.Empty, error){
+func (s *service) Insert(ctx context.Context, book *pbBooks.Book) (*pbBooks.Empty, error){
 	bookList = append(bookList, book)
-	return &books.Empty{}, nil
+	return &pbBooks.Empty{}, nil
 }
 ```
 
@@ -313,7 +313,7 @@ To implement the Get method in the server, edit `server.go` and add the followin
 
 `server.go`
 ```go
-func (s *service) Get(ctx context.Context, req *books.BookIdRequest) (*books.Book, error){
+func (s *service) Get(ctx context.Context, req *pbBooks.BookIdRequest) (*pbBooks.Book, error){
 	for i := 0; i < len(bookList); i++ {
 		if bookList[i].Id == req.Id {
 			return bookList[i], nil
@@ -367,7 +367,7 @@ Now edit `server.go` and add the following *delete* handler function:
 
 `server.go`
 ```go
-func (s *service) Delete (ctx context.Context, req *books.BookIdRequest) (*books.Empty, error) {
+func (s *service) Delete (ctx context.Context, req *pbBooks.BookIdRequest) (*pbBooks.Empty, error) {
 	for i := 0; i < len(bookList); i++ {
 		if bookList[i].Id == req.Id {
 			bookList = append(bookList[:i], bookList[i+1:]...)
@@ -444,10 +444,10 @@ var (
 ``` 
 and then modify the Insert function:
 ```go
-func (s *service) Insert(ctx context.Context, book *books.Book) (*books.Empty, error) {
+func (s *service) Insert(ctx context.Context, book *pbBooks.Book) (*pbBooks.Empty, error) {
 	bookList = append(bookList, book)
 	newBookEmitter.Emit("NewBook")
-	return &books.Empty{}, nil
+	return &pbBooks.Empty{}, nil
 }
 ```
 Handler functions for streaming rpc methods are invoked with a writable stream object.
@@ -456,7 +456,7 @@ To stream messages to the client, the stream's write() function is called when a
 
 Edit `server.go` and update the insert function to emit a new_book event when books are inserted:
 ```go
-func (s *service) Watch(empty *books.Empty, stream books.BookService_WatchServer) error {
+func (s *service) Watch(empty *pbBooks.Empty, stream pbBooks.BookService_WatchServer) error {
 	c := newBookEmitter.On("NewBook")
 	for {
 		<-c
@@ -516,25 +516,37 @@ Next step, is create a dockerfile with docker, we use docker image for golang ve
 So that we create a file `Dockerfile`
 
 ```dockerfile
-FROM golang:1.11.2-alpine
+# build stage
+FROM golang:1.11.2 as builder
 
 ENV SRV_NAME start
-
 ENV PKG_PATH /go/src/github.com/mresti/grpc-workshop
+
+RUN go get -u google.golang.org/grpc golang.org/x/net/context github.com/golang/protobuf/proto github.com/olebedev/emitter
 
 ADD books $PKG_PATH/$SRV_NAME/books
 ADD server.go $PKG_PATH/$SRV_NAME/server.go
 
 WORKDIR $PKG_PATH/$SRV_NAME
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh
-RUN go get -u google.golang.org/grpc golang.org/x/net/context github.com/golang/protobuf/proto github.com/olebedev/emitter
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server .
 
-RUN go install
+# final stage
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+COPY --from=builder /go/src/github.com/mresti/grpc-workshop/start/server .
+
+CMD ["./server"]
 
 EXPOSE 50051
 ```
+
+**Warning**: The end result is the same tiny production image as before, with a significant 
+reduction in complexity. More information at [docker documentation](https://docs.docker.com/develop/develop-images/multistage-build/#name-your-build-stages)
 
 Now, we have our docker with our gRPC server. 
 
@@ -549,7 +561,6 @@ services:
       dockerfile: ./Dockerfile
     logging:
       driver: json-file
-    command: go run server.go
     ports:
       - "50051:50051"
 ```

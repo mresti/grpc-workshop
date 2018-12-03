@@ -1,18 +1,27 @@
-FROM golang:1.11.2-alpine
+# build stage
+FROM golang:1.11.2 as builder
 
 ENV SRV_NAME step-6-deploy-grpc-server
-
 ENV PKG_PATH /go/src/github.com/mresti/grpc-workshop
+
+RUN go get -u google.golang.org/grpc golang.org/x/net/context github.com/golang/protobuf/proto github.com/olebedev/emitter
 
 ADD books $PKG_PATH/$SRV_NAME/books
 ADD server.go $PKG_PATH/$SRV_NAME/server.go
 
 WORKDIR $PKG_PATH/$SRV_NAME
 
-RUN apk update && apk upgrade && \
-    apk add --no-cache bash git openssh
-RUN go get -u google.golang.org/grpc golang.org/x/net/context github.com/golang/protobuf/proto github.com/olebedev/emitter
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server .
 
-RUN go install
+# final stage
+FROM alpine:latest
+
+RUN apk --no-cache add ca-certificates
+
+WORKDIR /root/
+
+COPY --from=builder /go/src/github.com/mresti/grpc-workshop/step-6-deploy-grpc-server/server .
+
+CMD ["./server"]
 
 EXPOSE 50051
